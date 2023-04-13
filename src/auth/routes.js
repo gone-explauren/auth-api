@@ -1,42 +1,43 @@
 'use strict';
 
 const express = require('express');
-const authRouter = express.Router();
 
-const { users } = require('./models');
-const basicAuth = require('./middleware/basic.js')
-const bearerAuth = require('./middleware/bearer.js')
-const permissions = require('./middleware/acl.js')
+const { users } = require('./models/index');
+const basicAuth = require('./middleware/basic');
+const bearerAuth = require('./middleware/bearer');
 
-authRouter.post('/signup', async (req, res, next) => {
+const router = express.Router();
+
+router.post('/signup', handleSignUp);
+router.post('/signin', basicAuth, handleSignIn);
+
+router.get('/secret', bearerAuth, handleSecret);
+router.get('/users', bearerAuth, handleUsers);
+
+async function handleSignUp(req, res, next) {
+  const userObj = req.body;
   try {
-    let userRecord = await users.create(req.body);
-    const output = {
-      user: userRecord,
-      token: userRecord.token
-    };
-    res.status(201).json(output);
+    const createdUser = await users.create(userObj);
+    res.status(201).json(createdUser);
   } catch (e) {
-    next(e.message)
+    console.error('Could not create User', e);
   }
-});
+}
 
-authRouter.post('/signin', basicAuth, (req, res, next) => {
-  const user = {
-    user: req.user,
-    token: req.user.token
-  };
-  res.status(200).json(user);
-});
+function handleSignIn(req, res, next) {
+  try {
+    res.status(200).json(req.user);
+  } catch (e) {
+    console.error('Invalid user', e);
+  }
+}
 
-authRouter.get('/users', bearerAuth, permissions('delete'), async (req, res, next) => {
-  const userRecords = await users.findAll({});
-  const list = userRecords.map(user => user.username);
-  res.status(200).json(list);
-});
+function handleSecret(req, res, next) {
+  res.send('Secret hit');
+}
 
-authRouter.get('/secret', bearerAuth, async (req, res, next) => {
-  res.status(200).send('Welcome to the secret area')
-});
+function handleUsers(req, res, next) {
+  res.send('Users hit');
+}
 
-module.exports = authRouter;
+module.exports = router;

@@ -4,7 +4,7 @@
 // It takes in a schema in the constructor and uses that instead of every collection
 // being the same and requiring their own schema. That's not very DRY!
 
-class Collection {
+class DataCollection {
 
   constructor(model) {
     this.model = model;
@@ -34,4 +34,4 @@ class Collection {
 
 }
 
-module.exports = Collection;
+module.exports = DataCollection;

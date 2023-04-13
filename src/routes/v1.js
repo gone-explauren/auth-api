@@ -34,8 +34,12 @@ async function handleGetOne(req, res) {
 
 async function handleCreate(req, res) {
   let obj = req.body;
-  let newRecord = await req.model.create(obj);
-  res.status(201).json(newRecord);
+  try {
+    let newRecord = await req.model.create(obj);
+    res.status(201).json(newRecord);
+  } catch (e) {
+    res.status(500).send('Cannot create');
+  }
 }
 
 async function handleUpdate(req, res) {
