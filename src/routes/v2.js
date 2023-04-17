@@ -1,8 +1,9 @@
 'use strict';
 
 const express = require('express');
-const dataModules = require('../auth/models');
-const permissions = require('../auth/middleware/acl');
+const dataModules = require('../models');
+const bearerAuth = require('../auth/middleware/bearer')
+const permissions = require('../auth/middleware/acl')
 
 const router = express.Router();
 
@@ -16,11 +17,12 @@ router.param('model', (req, res, next) => {
   }
 });
 
-router.get('/:model', permissions('read'), handleGetAll);
-router.get('/:model/:id', permissions('read'), handleGetOne);
-router.post('/:model', permissions('create'), handleCreate);
-router.put('/:model/:id', permissions('update'), handleUpdate);
-router.delete('/:model/:id', permissions('delete'), handleDelete);
+router.get('/:model', bearerAuth, permissions('read'), handleGetAll);
+router.get('/:model/:id', bearerAuth, permissions('read'), handleGetOne);
+router.post('/:model', bearerAuth, permissions('create'), handleCreate);
+router.put('/:model/:id', bearerAuth, permissions('update'), handleUpdate);
+router.delete('/:model/:id', bearerAuth, permissions('delete'), handleDelete);
+
 
 async function handleGetAll(req, res) {
   let allRecords = await req.model.get();
@@ -29,7 +31,7 @@ async function handleGetAll(req, res) {
 
 async function handleGetOne(req, res) {
   const id = req.params.id;
-  let theRecord = await req.model.get(id);
+  let theRecord = await req.model.get(id)
   res.status(200).json(theRecord);
 }
 
@@ -42,7 +44,7 @@ async function handleCreate(req, res) {
 async function handleUpdate(req, res) {
   const id = req.params.id;
   const obj = req.body;
-  let updatedRecord = await req.model.update(id, obj);
+  let updatedRecord = await req.model.update(id, obj)
   res.status(200).json(updatedRecord);
 }
 

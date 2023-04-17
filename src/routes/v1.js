@@ -34,12 +34,8 @@ async function handleGetOne(req, res) {
 
 async function handleCreate(req, res) {
   let obj = req.body;
-  try {
-    let newRecord = await req.model.create(obj);
-    res.status(201).json(newRecord);
-  } catch (e) {
-    res.status(500).send('Cannot create');
-  }
+  let newRecord = await req.model.create(obj);
+  res.status(201).json(newRecord);
 }
 
 async function handleUpdate(req, res) {
@@ -54,6 +50,5 @@ async function handleDelete(req, res) {
   let deletedRecord = await req.model.delete(id);
   res.status(200).json(deletedRecord);
 }
-
 
 module.exports = router;

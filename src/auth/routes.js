@@ -1,43 +1,24 @@
 'use strict';
 
-const express = require('express');
+const { users } = require('../../models')
 
-const { users } = require('./models/index');
-const basicAuth = require('./middleware/basic');
-const bearerAuth = require('./middleware/bearer');
+module.exports = async (req, res, next) => {
 
-const router = express.Router();
-
-router.post('/signup', handleSignUp);
-router.post('/signin', basicAuth, handleSignIn);
-
-router.get('/secret', bearerAuth, handleSecret);
-router.get('/users', bearerAuth, handleUsers);
-
-async function handleSignUp(req, res, next) {
-  const userObj = req.body;
   try {
-    const createdUser = await users.create(userObj);
-    res.status(201).json(createdUser);
+
+    if (!req.headers.authorization) { _authError() }
+
+    const token = req.headers.authorization.split(' ').pop();
+    const validUser = await users.model.authenticateToken(token);
+    req.user = validUser;
+    req.token = validUser.token;
+    next();
+
   } catch (e) {
-    console.error('Could not create User', e);
+    _authError();
+  }
+
+  function _authError() {
+    next('Invalid Login');
   }
 }
-
-function handleSignIn(req, res, next) {
-  try {
-    res.status(200).json(req.user);
-  } catch (e) {
-    console.error('Invalid user', e);
-  }
-}
-
-function handleSecret(req, res, next) {
-  res.send('Secret hit');
-}
-
-function handleUsers(req, res, next) {
-  res.send('Users hit');
-}
-
-module.exports = router;
